@@ -14,12 +14,13 @@ def scrape_google_trends():
     print("\n[Google Trends]")
     try:
         driver.get("https://trends.google.com/trends/trendingsearches/daily?geo=US")
+        time.sleep(5)
         
         # Scroll down to ensure the content is loaded
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         
         # Wait for the rows in the table to load
-        WebDriverWait(driver, 15).until(
+        WebDriverWait(driver, 20).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, "tbody tr"))
         )
         
@@ -30,6 +31,7 @@ def scrape_google_trends():
                 try:
                     # Find all divs inside the second cell of the row
                     trend_elements = row.find_elements(By.CSS_SELECTOR, "td:nth-child(2) div")
+                    
                     for trend_element in trend_elements:
                         print(trend_element.text.strip())  # Print each trend
                 except Exception as cell_error:
@@ -47,9 +49,10 @@ def scrape_reddit():
     print("\n[Reddit Trends]")
     try:
         driver.get("https://www.reddit.com/r/all/")
+        time.sleep(5)
         
         # Wait for posts to load
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 20).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a[slot='title']"))
         )
         
@@ -63,6 +66,7 @@ def scrape_reddit():
             print("No Reddit posts found. Check the updated structure.")
     except Exception as e:
         print(f"Error scraping Reddit: {e}")
+
 
 
 def scrape_youtube():
@@ -83,16 +87,24 @@ def scrape_bbc():
     try:
         driver.get("https://www.bbc.com/news")
         time.sleep(5)
-        WebDriverWait(driver, 5).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "h3.gs-c-promo-heading__title"))
+
+        # Wait for all headline elements to load
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "h2"))
         )
-        headlines = driver.find_elements(By.CSS_SELECTOR, "h3.gs-c-promo-heading__title")
-        for headline in headlines[:10]:
-            print(headline.text.strip())
+
+        # Find headline elements
+        headlines = driver.find_elements(By.CSS_SELECTOR, "h2.sc-8ea7699c-3.kwWByH")
+        
+        if headlines:
+            print("Top BBC Headlines:")
+            for headline in headlines[:10]:  # Limit to the first 10 for brevity
+                print(headline.text.strip())
+        else:
+            print("No BBC headlines found. The structure may have changed.")
     except Exception as e:
         print(f"Error scraping BBC News: {e}")
-        with open("bbc_debug.html", "w", encoding="utf-8") as f:
-            f.write(driver.page_source)
+
 
 def main():
     scrape_google_trends()
