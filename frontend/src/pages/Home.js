@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTrends } from '../utils/api';
+import { fetchTrends, categorizeTrends } from '../utils/api';
+import TrendCard from '../components/TrendCard';
 
 const Home = () => {
   const [trends, setTrends] = useState(null);
+  const [categories, setCategories] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [location, setLocation] = useState('US');
@@ -11,8 +14,16 @@ const Home = () => {
     const getTrends = async () => {
       try {
         setLoading(true);
-        const data = await fetchTrends(location);
-        setTrends(data);
+
+        // Fetch trends
+        const trendsData = await fetchTrends(location);
+
+        // Categorize trends
+        const categorizedData = await categorizeTrends(trendsData);
+
+        setTrends(trendsData);
+        setCategories(categorizedData);
+        setSelectedCategory('All'); // Default to "All"
       } catch (err) {
         setError(err.message);
       } finally {
@@ -26,6 +37,22 @@ const Home = () => {
   const handleLocationChange = (e) => {
     setLocation(e.target.value);
   };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+  };
+
+  const filteredTrends =
+    selectedCategory === 'All'
+      ? trends
+      : Object.fromEntries(
+          Object.entries(trends || {}).map(([source, sourceTrends]) => [
+            source,
+            sourceTrends.filter((trend) =>
+              categories[selectedCategory]?.includes(trend.name)
+            ),
+          ])
+        );
 
   if (loading) return <div className="loading">Loading trends...</div>;
   if (error) return <div className="error">Error: {error}</div>;
@@ -42,77 +69,23 @@ const Home = () => {
           <option value="AU">Australia</option>
         </select>
       </div>
+
+      <div className="filter-container">
+        <label htmlFor="category" className="filter-label">Filter by Category: </label>
+        <select id="category" className="filter-select" value={selectedCategory} onChange={handleCategoryChange}>
+          <option value="All">All</option>
+          {Object.keys(categories).map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="trends-container">
-        {trends && (
+        {filteredTrends && (
           <>
-            <div className="trend-card">
-              <h2>Google Trends</h2>
-              <ul>
-                {trends.google_trends.map((trend, index) => (
-                  <li key={index}>
-                    <a
-                      href={trend.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="trend-link"
-                    >
-                      {trend.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="trend-card">
-              <h2>Reddit Trends</h2>
-              <ul>
-                {trends.reddit_trends.map((trend, index) => (
-                  <li key={index}>
-                    <a
-                      href={trend.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="trend-link"
-                    >
-                      {trend.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="trend-card">
-              <h2>YouTube Trends</h2>
-              <ul>
-                {trends.youtube_trends.map((trend, index) => (
-                  <li key={index}>
-                    <a
-                      href={trend.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="trend-link"
-                    >
-                      {trend.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="trend-card">
-              <h2>BBC Trends</h2>
-              <ul>
-                {trends.bbc_trends.map((trend, index) => (
-                  <li key={index}>
-                    <a
-                      href={trend.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="trend-link"
-                    >
-                      {trend.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <TrendCard title="Google Trends" trends={filteredTrends.google_trends} />
+            <TrendCard title="Reddit Trends" trends={filteredTrends.reddit_trends} />
+            <TrendCard title="YouTube Trends" trends={filteredTrends.youtube_trends} />
           </>
         )}
       </div>

@@ -14,3 +14,13 @@ export const fetchTrends = async (location = 'US') => {
     throw error; // Re-throw the error for further handling
   }
 };
+
+export const categorizeTrends = async (trends) => {
+  try {
+    const response = await axios.post('http://localhost:5001/api/categorize', { trends });
+    return response.data.categories; // Return parsed categories
+  } catch (error) {
+    console.error("Error categorizing trends:", error);
+    throw error;
+  }
+};

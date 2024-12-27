@@ -4,6 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
 
 import time
 
@@ -39,9 +40,12 @@ def scrape_google_trends(location):
                 # Find the link to the detailed page
                 trend_link_element = row.find_element(By.CSS_SELECTOR, "a")
                 trend_link = trend_link_element.get_attribute("href")
+                search_volume_element = row.find_element(By.CSS_SELECTOR, "td:nth-child(3) div div")
+                search_volume = search_volume_element.text.strip()
+
 
                 # Append the trend name and link as a dictionary
-                trends.append({"name": trend_name, "link": trend_link})
+                trends.append({"name": trend_name, "link": trend_link, "search_volume": search_volume})
             except Exception as e:
                 print(f"Error in row: {e}")
         trends = [trend for trend in trends if trend]  # Remove empty strings   
@@ -69,7 +73,12 @@ def scrape_reddit(location):
         for post in posts[:10]:  # Limit to the first 10 posts
             post_title = post.text.strip()  # Extract the title
             post_link = post.get_attribute("href")  # Extract the link
-            reddit_trends.append({"name": post_title, "link": post_link})
+            try:
+                    upvote_element = post.find_element(By.CSS_SELECTOR, "div[data-testid='upvoteRatio'] span")
+                    upvotes = upvote_element.text.strip()
+            except Exception:
+                    upvotes = "N/A"  # Default if upvotes are unavailable            
+            reddit_trends.append({"name": post_title, "link": post_link, "upvotes": upvotes})
     except Exception as e:
         print(f"Error scraping Reddit: {e}")
     finally:
@@ -90,15 +99,30 @@ def scrape_youtube(location):
         
         # Wait for the video elements to load
         WebDriverWait(driver, 20).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a#video-title"))
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "ytd-video-renderer"))
         )
         
-        # Get the video titles and links
-        titles = driver.find_elements(By.CSS_SELECTOR, "a#video-title")
-        for title in titles[:10]:  # Limit to the first 10 trends
-            video_title = title.text.strip()  # Extract the video title
-            video_link = title.get_attribute("href")  # Extract the video link
-            youtube_trends.append({"name": video_title, "link": video_link})
+        # Get the video elements
+        videos = driver.find_elements(By.CSS_SELECTOR, "ytd-video-renderer")
+        for video in videos[:10]:  # Limit to the first 10 trends
+            try:
+                # Extract the video title and link
+                title_element = video.find_element(By.CSS_SELECTOR, "a#video-title")
+                video_title = title_element.text.strip()
+                video_link = title_element.get_attribute("href")
+
+                # Extract views
+                views_element = video.find_element(By.XPATH, ".//span[contains(@class, 'ytd-video-meta-block')]")
+                video_views = views_element.text.strip()
+
+                # Append the data
+                youtube_trends.append({
+                    "name": video_title,
+                    "link": video_link,
+                    "views": video_views,
+                })
+            except Exception as e:
+                print(f"Error processing video: {e}")
     except Exception as e:
         print(f"Error scraping YouTube: {e}")
     finally:
@@ -107,31 +131,45 @@ def scrape_youtube(location):
 
 
 
-# Scrape BBC Headlines
-def scrape_bbc(location):
-    bbc_trends = []
-    driver = initialize_driver()
-    try:
-        # Modify URL for regional content if available
-        region_urls = {
-            "US": "https://www.bbc.com/news",
-            "GB": "https://www.bbc.com/news/uk",
-            "IN": "https://www.bbc.com/news/world/asia/india",
-            "AU": "https://www.bbc.com/news/world/australia"
-        }
-        url = region_urls.get(location, "https://www.bbc.com/news")
-        driver.get(url)
-        time.sleep(5)
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "h2.sc-8ea7699c-3.kwWByH"))
-        )
-        headlines = driver.find_elements(By.CSS_SELECTOR, "h2.sc-8ea7699c-3.kwWByH")
-        bbc_trends = [headline.text.strip() for headline in headlines[:10]]
-    except Exception as e:
-        print(f"Error scraping BBC News: {e}")
-    finally:
-        driver.quit()
-    return bbc_trends
+
+# # Scrape BBC Headlines
+# def scrape_bbc(location):
+#     bbc_trends = []
+#     driver = initialize_driver()
+#     try:
+#         # Modify URL for regional content if available
+#         region_urls = {
+#             "US": "https://www.bbc.com/news",
+#             "GB": "https://www.bbc.com/news/uk",
+#             "IN": "https://www.bbc.com/news/world/asia/india",
+#             "AU": "https://www.bbc.com/news/world/australia"
+#         }
+#         url = region_urls.get(location, "https://www.bbc.com/news")
+#         driver.get(url)
+#         time.sleep(5)
+#         WebDriverWait(driver, 20).until(
+#             EC.presence_of_all_elements_located((By.CSS_SELECTOR, "h2.sc-8ea7699c-3.kwWByH"))
+#         )
+#         articles = driver.find_elements(By.CSS_SELECTOR, "div[data-testid='card-wrapper']")
+#         for article in articles:
+#             try:
+#                 # Extract headline
+#                 headline_element = article.find_element(By.CSS_SELECTOR, "h2.sc-8ea7699c-3.kwWByH")
+#                 headline = headline_element.text.strip()
+
+#                 # Extract link
+#                 link_element = article.find_element(By.CSS_SELECTOR, "a")
+#                 link = link_element.get_attribute("href")
+
+#                 # Append to trends list
+#                 bbc_trends.append({"headline": headline, "link": link})
+#             except Exception as e:
+#                 print(f"Error extracting article: {e}")
+#     except Exception as e:
+#         print(f"Error scraping BBC News: {e}")
+#     finally:
+#         driver.quit()
+#     return bbc_trends
 
 
 # Main Function
@@ -139,12 +177,12 @@ def main(location='US'):
     google_trends = scrape_google_trends(location)
     reddit_trends = scrape_reddit(location)
     youtube_trends = scrape_youtube(location)
-    bbc_trends = scrape_bbc(location)
+    # bbc_trends = scrape_bbc(location)
     return {
         "google_trends": google_trends,
         "reddit_trends": reddit_trends,
         "youtube_trends": youtube_trends,
-        "bbc_trends": bbc_trends
+        # "bbc_trends": bbc_trends
     }
 
 
