@@ -3,7 +3,7 @@ import axios from 'axios';
 export const fetchTrends = async (location = 'US') => {
   try {
     // Pass the location as a query parameter
-    const response = await axios.get(`http://localhost:5001/api/trends?location=${location}`);
+    const response = await axios.get(`https://trendifynow.netlify.app/api/trends?location=${location}`);
     if (response.status === 200) {
       return response.data; // Return the trends data
     } else {
@@ -17,7 +17,7 @@ export const fetchTrends = async (location = 'US') => {
 
 export const categorizeTrends = async (trends) => {
   try {
-    const response = await axios.post('http://localhost:5001/api/categorize', { trends });
+    const response = await axios.post('https://trendifynow.netlify.app/api/categorize', { trends });
     return response.data.categories; // Return parsed categories
   } catch (error) {
     console.error("Error categorizing trends:", error);
