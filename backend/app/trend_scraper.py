@@ -65,19 +65,22 @@ def scrape_reddit(location):
         driver.get(url)
         time.sleep(10)
         WebDriverWait(driver, 20).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a[slot='title']"))
+            EC.presence_of_all_elements_located((By.TAG_NAME, "shreddit-post"))
         )
-        posts = driver.find_elements(By.CSS_SELECTOR, "a[slot='title']")
+        posts = driver.find_elements(By.TAG_NAME, "shreddit-post")
         
         # Extract title and link for each post
         for post in posts[:10]:  # Limit to the first 10 posts
-            post_title = post.text.strip()  # Extract the title
-            post_link = post.get_attribute("href")  # Extract the link
+            post_title = post.get_attribute('post-title')  # Extract the title
+            perma_link = post.get_attribute('permalink')  # Extract the permalink
+            post_link = f"https://www.reddit.com{perma_link}"
+            
+            
             try:
-                    upvote_element = post.find_element(By.CSS_SELECTOR, "div[data-testid='upvoteRatio'] span")
-                    upvotes = upvote_element.text.strip()
-            except Exception:
-                    upvotes = "N/A"  # Default if upvotes are unavailable            
+                    upvotes =  post.get_attribute("score")
+            except Exception as e:
+                    upvotes = "N/A"  # Default if upvotes are unavailable  
+                    print(f"Error extracting upvotes: {e}")          
             reddit_trends.append({"name": post_title, "link": post_link, "upvotes": upvotes})
     except Exception as e:
         print(f"Error scraping Reddit: {e}")

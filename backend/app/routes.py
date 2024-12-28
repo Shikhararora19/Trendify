@@ -57,7 +57,7 @@ def categorize_trends():
                 current_category = line.replace("###", "").strip(":").strip()
                 categories[current_category] = []  # Initialize the category list
             # Explicitly match `** Header:**` format
-            elif line.startswith("**") and line.endswith(":**"):
+            elif line.startswith("**"):
                 current_category = line.replace("**", "").strip(":").strip()
                 categories[current_category] = []  # Initialize the category list
             # Handle list items (e.g., `- item` or `1. item`)
