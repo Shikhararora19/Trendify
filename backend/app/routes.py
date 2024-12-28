@@ -2,7 +2,10 @@ from flask import Blueprint, jsonify, request
 from .utils import main  # Function to fetch trends
 import openai
 import re
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 api_bp = Blueprint('api', __name__)
 
@@ -33,7 +36,7 @@ def categorize_trends():
         print("Titles for Categorization:", titles)
 
         # Call OpenAI API to categorize
-        openai.api_key = "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"
+        openai.api_key =  os.getenv("OPENAI_API_KEY")
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[
