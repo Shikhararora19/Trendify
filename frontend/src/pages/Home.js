@@ -42,17 +42,33 @@ const Home = () => {
     setSelectedCategory(e.target.value);
   };
 
-  const filteredTrends =
-    selectedCategory === 'All'
-      ? trends
-      : Object.fromEntries(
-          Object.entries(trends || {}).map(([source, sourceTrends]) => [
-            source,
-            sourceTrends.filter((trend) =>
-              categories[selectedCategory]?.includes(trend.name)
-            ),
-          ])
-        );
+const normalizeString = (str) => str.trim().toLowerCase();
+
+const filteredTrends =
+  selectedCategory === "All"
+    ? trends
+    : {
+        google_trends: trends?.google_trends?.filter((trend) =>
+          categories[selectedCategory]?.some(
+            (categoryTrend) =>
+              normalizeString(categoryTrend) === normalizeString(trend.name)
+          )
+        ),
+        reddit_trends: trends?.reddit_trends?.filter((trend) =>
+          categories[selectedCategory]?.some(
+            (categoryTrend) =>
+              normalizeString(categoryTrend) === normalizeString(trend.name)
+          )
+        ),
+        youtube_trends: trends?.youtube_trends?.filter((trend) =>
+          categories[selectedCategory]?.some(
+            (categoryTrend) =>
+              normalizeString(categoryTrend) === normalizeString(trend.name)
+          )
+        ),
+      };
+
+
 
   if (loading) return <div className="loading">Loading trends...</div>;
   if (error) return <div className="error">Error: {error}</div>;
