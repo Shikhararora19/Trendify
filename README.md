@@ -1,6 +1,6 @@
 # Trendify
 
-Trendify is a full stack web application that aggregates trending topics from various platforms, including Google Trends, Reddit, and YouTube, and categorizes them for user convenience. By leveraging the power of ChatGPT, Trendify provides intelligent categorization of fetched trends into relevant categories like Entertainment, Sports, Technology, and more.
+Trendify is a full stack web application that scrapes trending topics from various platforms, including Google Trends, Reddit, and YouTube, and categorizes them for user convenience. By leveraging the power of ChatGPT, Trendify provides intelligent categorization of scraped trends into relevant categories like Entertainment, Sports, Technology, and more.
 
 ## Tech Stack
 
@@ -13,7 +13,7 @@ Trendify is a full stack web application that aggregates trending topics from va
 - **Python**: Core backend logic and integration with external APIs.
 
 ### API Integration
-- **OpenAI**: Used to categorize fetched data into meaningful categories.
+- **OpenAI**: Used to categorize scraped data into meaningful categories.
 
 ### Other Tools
 - **Axios**: For making API requests.
@@ -22,7 +22,7 @@ Trendify is a full stack web application that aggregates trending topics from va
 ---
 
 ## Features
-- Fetches trends from Google, Reddit, and YouTube.
+- Scrapes trends from Google, Reddit, and YouTube.
 - Categorizes data into predefined categories using ChatGPT.
 - Displays trends with relevant metadata like search volume, upvotes, or views.
 
@@ -86,7 +86,7 @@ Trendify is a full stack web application that aggregates trending topics from va
 ---
 
 ## Usage
-- **Select Location**: Choose the region to fetch trends from.
+- **Select Location**: Choose the region to scrape trends from.
 - **Filter by Category**: Filter the trends by predefined categories.
 - **Explore Trends**: Click on individual trends to view more details.
 
