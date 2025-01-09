@@ -15,6 +15,9 @@ Trendify is a full stack web application that scrapes trending topics from vario
 ### API Integration
 - **OpenAI**: Used to categorize scraped data into meaningful categories.
 
+### Web Scraping
+- **Selenium**: For automating browser interactions and scraping dynamic content.
+
 ### Other Tools
 - **Axios**: For making API requests.
 - **NPM**: For managing frontend dependencies and building the frontend.
